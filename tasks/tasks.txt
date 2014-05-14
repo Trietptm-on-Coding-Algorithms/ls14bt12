@@ -1,0 +1,8 @@
+INCLUDE networking.txt
+
+Machines Windows : 
+
+-Mettre en place une GPO Basique
+-Lister les logiciels installer sur l'ensembles des machines windows
+-Lister les services devant restés activés.
+-Lister les mises à jours nécessaires, affectant les services devant restés activés.

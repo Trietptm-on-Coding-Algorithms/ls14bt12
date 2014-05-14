@@ -1,0 +1,308 @@
+Building configuration...
+
+Current configuration : 5100 bytes
+!
+! Last configuration change at 07:00:00 UTC Tue May 13 2014 by greenteam
+!
+version 15.3
+service timestamps debug datetime msec
+service timestamps log datetime msec
+service password-encryption
+no platform punt-keepalive disable-kernel-core
+platform console virtual
+!
+hostname r2.blue12.ex
+!
+boot-start-marker
+boot-end-marker
+!
+!
+vrf definition Mgmt-intf
+ !
+ address-family ipv4
+ exit-address-family
+ !
+ address-family ipv6
+ exit-address-family
+!
+enable password 7 14031D191E0B6B79777C
+!
+!
+transport-map type persistent webui http-restapi
+ secure-server
+!
+no aaa new-model
+!
+!
+!
+!
+!
+
+
+ip domain name blue12.ex
+ip name-server 10.12.1.2
+ip name-server 10.12.1.9
+!
+!
+!
+ipv6 unicast-routing
+!
+!
+!
+!
+!
+!
+!
+!
+multilink bundle-name authenticated
+!
+crypto pki trustpoint TP-self-signed-3733452324
+ enrollment selfsigned
+ subject-name cn=IOS-Self-Signed-Certificate-3733452324
+ revocation-check none
+ rsakeypair TP-self-signed-3733452324
+!
+!
+crypto pki certificate chain TP-self-signed-3733452324
+ certificate self-signed 01
+  3082022B 30820194 A0030201 02020101 300D0609 2A864886 F70D0101 05050030
+  31312F30 2D060355 04031326 494F532D 53656C66 2D536967 6E65642D 43657274
+  69666963 6174652D 33373333 34353233 3234301E 170D3134 30353132 32313335
+  32385A17 0D323030 31303130 30303030 305A3031 312F302D 06035504 03132649
+  4F532D53 656C662D 5369676E 65642D43 65727469 66696361 74652D33 37333334
+  35323332 3430819F 300D0609 2A864886 F70D0101 01050003 818D0030 81890281
+  8100B286 A20A5646 A8DEF521 9B81D862 E97A7D63 199F5716 DC9BD6D9 D18777D1
+  BC0FCDB0 85628585 0C62DA14 6E2377A1 D43081B4 15BEFF79 4789BF56 B1151F39
+  3EE54E2C 59F4E37E 72F10128 489AC9AE 9E45AF61 93F43B18 C21210C7 669CDD51
+  FF7ADF57 B4123787 9EE70A24 E20C0F43 7656D267 6FCC059F 7E88A0DF A0C3F880
+  A3FB0203 010001A3 53305130 0F060355 1D130101 FF040530 030101FF 301F0603
+  551D2304 18301680 1436EFC1 3C133845 1E378210 DC652F41 7B9C229C CD301D06
+  03551D0E 04160414 36EFC13C 1338451E 378210DC 652F417B 9C229CCD 300D0609
+  2A864886 F70D0101 05050003 81810099 95FDA51C 290E718B 64CBFDFF 49CED377
+  EEAF1C33 ECE8138A 4E3BA033 861B140F E94CE4C2 A60FF25A 9F09BCFE E483691E
+  64B92D20 AD0425A6 BBB393E9 7B360912 4C6E9977 37295C06 C6297DD6 74AA762A
+  E3A175DC 31EA7A88 18BBA162 B8BC2322 52B77418 D73EC9A8 85783858 35CB836C
+  0118D20E E5E4E5C0 FAE5A1EE 6FEFF0
+        quit
+license accept end user agreement
+license boot level premium
+spanning-tree extend system-id
+!
+username admin privilege 15 password 7 061200335E41484B5643
+username greenteam privilege 15 secret 5 $1$K9rU$gWo5w2eNazdlIdpIz1H82/
+!
+redundancy
+ mode none
+!
+!
+!
+!
+!
+!
+ip tftp source-interface GigabitEthernet0
+ip ssh rsa keypair-name ssh-key
+ip ssh version 2
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface GigabitEthernet1
+ ip address 10.202.12.1 255.255.255.0
+ negotiation auto
+ ipv6 address 2001:10:202:12::1/64
+!
+interface GigabitEthernet2
+ ip address 10.12.0.3 255.255.255.0
+ standby 0 ip 10.12.0.2
+ standby 0 preempt
+ negotiation auto
+ ipv6 address 2001:10:12::3/64
+!
+interface GigabitEthernet3
+ ip address 10.12.6.2 255.255.255.0
+ negotiation auto
+ ipv6 address 2001:10:12:6::2/64
+!
+interface GigabitEthernet0
+ vrf forwarding Mgmt-intf
+ ip address 10.0.112.62 255.255.255.0
+ negotiation auto
+!
+router bgp 65012
+ bgp log-neighbor-changes
+ neighbor 10.202.12.2 remote-as 65200
+ neighbor 2001:10:202:12::2 remote-as 65200
+ !
+ address-family ipv4
+  network 10.12.0.0 mask 255.255.255.0
+  aggregate-address 10.12.0.0 255.255.128.0 summary-only
+  redistribute static
+  neighbor 10.202.12.2 activate
+  neighbor 10.202.12.2 route-map PREPEND out
+  no neighbor 2001:10:202:12::2 activate
+ exit-address-family
+ !
+ address-family ipv6
+  redistribute static
+  network 2001:10:12::/64
+  aggregate-address 2001:10:12::/56 summary-only
+  neighbor 2001:10:202:12::2 activate
+  neighbor 2001:10:202:12::2 route-map PREPEND out
+ exit-address-family
+!
+!
+virtual-service csr_mgmt
+ activate
+!
+ip forward-protocol nd
+!
+ip http server
+ip http authentication local
+ip http secure-server
+ip route 10.12.1.0 255.255.255.0 10.12.0.1
+ip route 10.12.2.0 255.255.255.0 10.12.0.1
+ip route 10.12.3.0 255.255.255.0 10.12.0.1
+ip route 10.12.4.0 255.255.255.0 10.12.0.1
+ip route 10.12.5.0 255.255.255.0 10.12.0.1
+!
+ipv6 route 2001:10:12:1::/64 2001:10:12::1
+ipv6 route 2001:10:12:2::/64 2001:10:12::1
+ipv6 route 2001:10:12:3::/64 2001:10:12::1
+ipv6 route 2001:10:12:4::/64 2001:10:12::1
+ipv6 route 2001:10:12:5::/64 2001:10:12::1
+!
+route-map PREPEND permit 10
+ set as-path prepend 65012 65012 65012 65012
+!
+snmp-server community public RO
+snmp-server community private RW
+snmp-server enable traps tty
+snmp-server enable traps bgp
+snmp-server enable traps config
+snmp-server host 10.12.4.3 version 2c public
+!
+!
+control-plane
+!
+!
+line con 0
+ logging synchronous
+ login local
+ stopbits 1
+line aux 0
+ stopbits 1
+line vty 0 4
+ session-timeout 480
+ exec-timeout 480 0
+ logging synchronous
+ login local
+ transport input telnet ssh
+line vty 5 15
+ session-timeout 480
+ exec-timeout 480 0
+ logging synchronous
+ login local
+ transport input telnet ssh
+!
+transport type persistent webui input http-restapi
+!
+onep
+!
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+r2.blue12.ex#sh ver
+Cisco IOS XE Software, Version 03.10.02.S - Extended Support Release
+Cisco IOS Software, CSR1000V Software (X86_64_LINUX_IOSD-UNIVERSALK9-M), Version 15.3(3)S2, RELEASE SOFTWARE (fc3)
+Technical Support: http://www.cisco.com/techsupport
+Copyright (c) 1986-2014 by Cisco Systems, Inc.
+Compiled Fri 31-Jan-14 20:10 by mcpre
+
+
+Cisco IOS-XE software, Copyright (c) 2005-2014 by cisco Systems, Inc.
+All rights reserved.  Certain components of Cisco IOS-XE software are
+licensed under the GNU General Public License ("GPL") Version 2.0.  The
+software code licensed under GPL Version 2.0 is free software that comes
+with ABSOLUTELY NO WARRANTY.  You can redistribute and/or modify such
+GPL code under the terms of GPL Version 2.0.  For more details, see the
+documentation or "License Notice" file accompanying the IOS-XE software,
+or the applicable URL provided on the flyer accompanying the IOS-XE
+software.
+
+
+ROM: IOS-XE ROMMON
+
+r2.blue12.ex uptime is 9 hours, 19 minutes
+Uptime for this control processor is 9 hours, 21 minutes
+System returned to ROM by reload
+System image file is "bootflash:packages.conf"
+Last reload reason: <NULL>
+
+
+
+This product contains cryptographic features and is subject to United
+States and local country laws governing import, export, transfer and
+use. Delivery of Cisco cryptographic products does not imply
+third-party authority to import, export, distribute or use encryption.
+Importers, exporters, distributors and users are responsible for
+compliance with U.S. and local country laws. By using this product you
+agree to comply with applicable laws and regulations. If you are unable
+to comply with U.S. and local laws, return this product immediately.
+
+A summary of U.S. laws governing Cisco cryptographic products may be found at:
+http://www.cisco.com/wwl/export/crypto/tool/stqrg.html
+
+If you require further assistance please contact us by sending email to
+export@cisco.com.
+
+License Level: premium
+License Type: Evaluation License
+Next reload license Level: premium
+
+cisco CSR1000V (VXE) processor with 821388K/6147K bytes of memory.
+Processor board ID 9NNKUVP9JMX
+3 Gigabit Ethernet interfaces
+32768K bytes of non-volatile configuration memory.
+3145728K bytes of physical memory.
+7774207K bytes of virtual hard disk at bootflash:.
+
+Configuration register is 0x2102

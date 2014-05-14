@@ -1,0 +1,10 @@
+
+
+- Upload règles FW
+
+- Sur les tablettes: tab.uav.blue12.ex 
+$ ifconfig eth2 down
+
+- Fermer les acces depuis GT_MGT sur le FW
+
+- Upload de configuration sur routeurs
