@@ -10,7 +10,9 @@ audit_linux.sh : Auditing script for Linux hosts
 
 fw
 ------
-config.xml : pfSense configuration file
+config-fw.xml : pfSense configuration file for fw.blue12.ex
+config-fw.expo.xml : pfSense configuration file for fw.expo.blue12.ex
+
 
 
 router
